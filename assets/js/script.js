@@ -1,83 +1,96 @@
-let canvas = document.getElementById("snake"); //criar elemento que irá rodar o jogo
-let context = canvas.getContext("2d"); //....
-let box = 32;
-let snake = []; //criar cobrinha como lista, já que ela vai ser uma série de coordenadas, que quando pintadas, criam os quadradinhos
-snake[0] ={
-    x: 8 * box,
-    y: 8 * box
-}
-let direction = "right";
-let food ={
-    x: Math.floor(Math.random() * 15 + 1) * box,
-    y: Math.floor(Math.random() * 15 + 1) * box
-}
+window.onload = function() {
 
-function criarBG(){
-    context.fillStyle = "lightgreen";
-    context.fillRect(0, 0, 16*box, 16*box); //desenha o retângulo usando x e y e a largura e altura setadas
-}
+    var stage = document.getElementById('stage');
+    var context = stage.getContext("2d");
+    document.addEventListener("keydown", keyPush);
 
-function criarCobrinha (){
-    for(i = 0; i < snake.length; i++){
-        context.fillStyle = "green";
-        context.fillRect(snake[i].x, snake[i].y, box, box);
-    }
-}
+    setInterval(game, 80);
 
-function drawFood (){
-    context.fillStyle = "red";
-    context.fillRect(food.x, food.y, box, box);
-}
+    const vel = 1;
 
-//quando um evento acontece, detecta e chama uma função
-document.addEventListener('keydown', update);
+    var vx = vy = 0;
+    var px = 10;
+    var py = 15;
+    var tamanhoPeca = 30;
+    var qtdPeca = 20;
+    var ax = ay = 15;
 
-function update(event){
-    if(event.keyCode == 37 && direction != 'right') direction = 'left';
-    if(event.keyCode == 38 && direction != 'down') direction = 'up';
-    if(event.keyCode == 39 && direction != 'left') direction = 'right';
-    if(event.keyCode == 40 && direction != 'up') direction = 'down';
-}
+    var trail = [];
+    tail = 5;
 
-function iniciarJogo(){    
 
-    if(snake[0].x > 15*box && direction == "right") snake[0].x = 0;
-    if(snake[0].x < 0 && direction == 'left') snake[0].x = 16 * box;
-    if(snake[0].y > 15*box && direction == "down") snake[0].y = 0;
-    if(snake[0].y < 0 && direction == 'up') snake[0].y = 16 * box;
-    
-    for(i = 1; i < snake.length; i++){
-        if(snake[0].x == snake[i].x && snake[0].y == snake[i].y){
-            clearInterval(jogo);
-            alert('Game Over :(');
+    function game() 
+    {
+        px += vx;
+        py += vy;
+
+        if (px < 0) {
+            px = qtdPeca-1;
+        }
+        if (px > qtdPeca-1) {
+            px = 0;
+        }
+        if (py < 0) {
+            py = qtdPeca-1;
+        }
+        if (py > qtdPeca-1) {
+            py = 0;
+        }
+
+
+
+        context.fillStyle = "black";
+        context.fillRect(0,0, stage.width, stage.height);
+
+        context.fillStyle = "Red";
+        context.fillRect(ax*tamanhoPeca,ay*tamanhoPeca, tamanhoPeca, tamanhoPeca);
+
+        context.fillStyle = "gray";
+        for (var i = 0; i< trail.length; i++) {
+            context.fillRect(trail[i].x*tamanhoPeca, trail[i].y*tamanhoPeca, tamanhoPeca-1, tamanhoPeca-1);
+
+            if (trail[i].x == px && trail[i].y == py)
+            {
+                vx = vy = 0;
+                tail = 5;
+            }
+        }
+
+        trail.push({x:px,y:py})
+        while (trail.length > tail) {
+            trail.shift();
+        }
+
+        if (ax==px && ay==py) {
+            tail++;
+            ax = Math.floor(Math.random()*qtdPeca);
+            ay = Math.floor(Math.random()*qtdPeca);
         }
     }
 
-    criarBG();
-    criarCobrinha();
-    drawFood();
-
-    let snakeX = snake[0].x;
-    let snakeY = snake[0].y;
-
-    if(direction == "right") snakeX += box;
-    if(direction == "left") snakeX -= box;
-    if (direction == "up") snakeY -= box;
-    if(direction == "down") snakeY += box;
-
-    if(snakeX != food.x || snakeY != food.y){
-        snake.pop(); //pop tira o último elemento da lista
-    }else{
-        food.x = Math.floor(Math.random() * 15 +1) * box;
-        food.y = Math.floor(Math.random() * 15 +1) * box;
-    }
-    
-    let newHead ={
-        x: snakeX,
-        y: snakeY
+    function keyPush (event) {
+        switch (event.keyCode) {
+            case 37: //left
+                vx = -vel;
+                vy = 0;
+                break;
+            case 38: //up
+                vx = 0;
+                vy = -vel;
+                break;
+            case 39: //right
+                vx = vel;
+                vy = 0;
+                break;
+            case 40: //down
+                vx = 0;
+                vy = vel;
+                break;
+        }
     }
 
-    snake.unshift(newHead); //método unshift adiciona como primeiro quadradinho da cobrinha
+
+
+
+
 }
-
-let jogo = setInterval(iniciarJogo, 100);
